@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WildVerse Media</title>
+  <style>
+    :root {
+      --bg: #071116;
+      --panel: rgba(255,255,255,.06);
+      --line: rgba(160,255,255,.16);
+      --text: #eefcff;
+      --muted: #9fb8c3;
+      --cyan: #78f7ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 10%, rgba(120,247,255,.14), transparent 28%),
+        radial-gradient(circle at 85% 0%, rgba(255,79,216,.10), transparent 30%),
+        var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 34px 18px 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4rem);
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 18px 18px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    input {
+      width: min(100%, 420px);
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(0,0,0,.28);
+      outline: none;
+      font: inherit;
+    }
+
+    input:focus {
+      border-color: rgba(120,247,255,.55);
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 18px 42px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      box-shadow: 0 16px 36px rgba(0,0,0,.22);
+    }
+
+    .card img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: rgba(0,0,0,.25);
+    }
+
+    .card-body {
+      padding: 12px;
+    }
+
+    .title {
+      margin: 0;
+      font-size: .95rem;
+      font-weight: 850;
+      line-height: 1.15;
+    }
+
+    .meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    button,
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(0,0,0,.20);
+      text-decoration: none;
+      font: inherit;
+      font-size: .78rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover,
+    a:hover {
+      border-color: rgba(120,247,255,.55);
+      color: var(--cyan);
+    }
+
+    .empty {
+      padding: 28px;
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WildVerse Media</h1>
+    <p>Static album art and thumbnails for WildVerse.</p>
+  </header>
+
+  <section class="toolbar">
+    <input id="search" type="search" placeholder="Search album, persona, or path…">
+  </section>
+
+  <main>
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <script>
+    const baseUrl = location.origin + location.pathname.replace(/\/$/, "");
+    const grid = document.getElementById("grid");
+    const search = document.getElementById("search");
+
+    let mediaItems = [];
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getUrl(path) {
+      return `${baseUrl}/${String(path || "").replace(/^\/+/, "")}`;
+    }
+
+    function render(items) {
+      if (!items.length) {
+        grid.innerHTML = `<div class="empty">No media found.</div>`;
+        return;
+      }
+
+      grid.innerHTML = items.map(item => {
+        const url = getUrl(item.path);
+
+        return `
+          <article class="card">
+            <img src="${escapeHtml(url)}" alt="${escapeHtml(item.title || "WildVerse media")}" loading="lazy">
+            <div class="card-body">
+              <h2 class="title">${escapeHtml(item.title || "Untitled")}</h2>
+              <div class="meta">${escapeHtml(item.persona || "WildVerse")} · ${escapeHtml(item.type || "media")}</div>
+              <div class="meta">${escapeHtml(item.path || "")}</div>
+              <div class="actions">
+                <a href="${escapeHtml(url)}" target="_blank" rel="noopener">Open</a>
+                <button type="button" data-copy="${escapeHtml(url)}">Copy URL</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function filterAndRender() {
+      const q = search.value.trim().toLowerCase();
+
+      if (!q) {
+        render(mediaItems);
+        return;
+      }
+
+      render(mediaItems.filter(item => {
+        return [
+          item.title,
+          item.persona,
+          item.type,
+          item.path
+        ].join(" ").toLowerCase().includes(q);
+      }));
+    }
+
+    document.addEventListener("click", async event => {
+      const button = event.target.closest("[data-copy]");
+      if (!button) return;
+
+      await navigator.clipboard.writeText(button.dataset.copy);
+      button.textContent = "Copied";
+      setTimeout(() => {
+        button.textContent = "Copy URL";
+      }, 1200);
+    });
+
+    search.addEventListener("input", filterAndRender);
+
+    fetch("./media-manifest.json", { cache: "no-store" })
+      .then(response => response.json())
+      .then(items => {
+        mediaItems = Array.isArray(items) ? items : [];
+        render(mediaItems);
+      })
+      .catch(() => {
+        grid.innerHTML = `<div class="empty">Could not load media-manifest.json.</div>`;
+      });
+  </script>
+</body>
+</html>
